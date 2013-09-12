@@ -55,7 +55,47 @@ class Validator:
         
         self.parsed = True    
         return True    
+            
+                
+            
+        
+    def whitespace(self):
+        
+        haserror = False
+        
+        if not self.parsed:
+            print "File not parsed. Exiting."
+            
+        index = 1
+        for line in self.chinese_captions:
+            if line.lstrip() != line:
+                haserror = True
+                print str(index) + ": whitespace at the beginning of sentence\nActual: " + line
+            if find_whitespace_right(line):
+                haserror = True
+                print str(index) + ": whitespace at the end of sentence\nActual: " + line
+            index += 1
+        
+        index = 1
+        for line in self.english_captions:
+            if line.lstrip() != line:
+                haserror = True
+                print str(index) + ": whitespace at the beginning of sentence\nActual: " + line
+            if find_whitespace_right(line):
+                haserror = True
+                print str(index) + ": whitespace at the end of sentence\nActual: " + line
+            index += 1
 
+        return not haserror
+			
+def find_whitespace_right(line):
+        
+    right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
+    right_whitespace_result = right_whitespace_re.match(line)
+    return right_whitespace_result
+        
+    
 if __name__ == "__main__":
     v = Validator("step1.p2.done by.raitorm.srt")
     print v.parse_file()
+    print v.whitespace()
