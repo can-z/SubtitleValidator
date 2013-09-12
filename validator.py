@@ -1,5 +1,8 @@
 import re
 import datetime
+import Tkinter, tkFileDialog
+import sys
+import os
 
 class Validator:
     def __init__(self, filename):
@@ -10,7 +13,9 @@ class Validator:
         self.english_captions = []
         self.parsed = False
         self.initial_upper_list = []
-        self.result_file = file("result-" + filename +\
+        
+        
+        self.result_file = file(os.path.basename(filename) + "result-" +\
                                 "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +\
                                 ".txt", "w")
             
@@ -153,7 +158,14 @@ def find_whitespace_right(line):
         
     
 if __name__ == "__main__":
-    v = Validator("step1.p2.done by.raitorm.srt")
+
+    root = Tkinter.Tk()
+    root.withdraw()
+    
+    filename = tkFileDialog.askopenfilename()
+    if not filename:
+        sys.exit(0)
+    v = Validator(filename)
     v.parse_file()
     v.whitespace_check()
     v.upper_case_check()
