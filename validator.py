@@ -1,4 +1,5 @@
 import re
+import datetime
 
 class Validator:
     def __init__(self, filename):
@@ -9,6 +10,9 @@ class Validator:
         self.english_captions = []
         self.parsed = False
         self.initial_upper_list = []
+        self.result_file = file("result-" + filename +\
+                                "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +\
+                                ".txt", "w")
             
     
     def parse_file(self):
@@ -20,7 +24,7 @@ class Validator:
         
         while line != "":
             if not line.strip().isdigit():
-                error("Line " + str(cur_line) + ": Invalid subtitle index \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Invalid subtitle index \nActual: " + line)
                 return False
             else:
                 self.line_numbers.append(line)
@@ -34,7 +38,7 @@ class Validator:
             
             timestamp_result = timestamp_regex.match(line)
             if (not timestamp_result):
-                error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line)
                 return False
             else:
                 self.timestamps.append(line)
@@ -56,7 +60,7 @@ class Validator:
             line = f.readline()
             cur_line += 1
             if line.strip() != "":
-                error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line)
                 return False
                 
             line = f.readline()
@@ -79,20 +83,20 @@ class Validator:
         for line in self.chinese_captions:
             if line.lstrip() != line:
                 haserror = True
-                error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
             if find_whitespace_right(line):
                 haserror = True
-                error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
             index += 1
         
         index = 1
         for line in self.english_captions:
             if line.lstrip() != line:
                 haserror = True
-                error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
             if find_whitespace_right(line):
                 haserror = True
-                error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
             index += 1
 
         return not haserror
@@ -107,10 +111,10 @@ class Validator:
                 if first_letter.islower():
                     haserror = True
                     if index == 0:
-                        error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
+                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
+                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
@@ -126,14 +130,20 @@ class Validator:
                 if first_letter.isupper():
                     haserror = True
                     if index == 0:
-                        warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
+                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
+                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: " + self.english_captions[index - 1])
             
             index += 1
-        return not haserror    
+        return not haserror
+        
+    def error(self, message):
+        self.result_file.write("[ERROR] " + message + "\n\n")
+    
+    def warning(self, message):
+        self.result_file.write("[WARNING] " + message + "\n\n")
     
 def find_whitespace_right(line):
         
@@ -141,12 +151,6 @@ def find_whitespace_right(line):
     right_whitespace_result = right_whitespace_re.match(line)
     return right_whitespace_result
         
-
-def error(message):
-    print "[ERROR] " + message + "\n"
-    
-def warning(message):
-    print "[WARNING] " + message + "\n"
     
 if __name__ == "__main__":
     v = Validator("step1.p2.done by.raitorm.srt")
