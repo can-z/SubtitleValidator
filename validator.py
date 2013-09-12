@@ -29,7 +29,7 @@ class Validator:
         
         while line != "":
             if not line.strip().isdigit():
-                self.error("Line " + str(cur_line) + ": Invalid subtitle index \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Invalid subtitle index \nActual: " + line.strip())
                 return False
             else:
                 self.line_numbers.append(line)
@@ -43,7 +43,7 @@ class Validator:
             
             timestamp_result = timestamp_regex.match(line)
             if (not timestamp_result):
-                self.error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line.strip())
                 return False
             else:
                 self.timestamps.append(line)
@@ -65,7 +65,7 @@ class Validator:
             line = f.readline()
             cur_line += 1
             if line.strip() != "":
-                self.error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line)
+                self.error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line.strip())
                 return False
                 
             line = f.readline()
@@ -88,20 +88,20 @@ class Validator:
         for line in self.chinese_captions:
             if line.lstrip() != line:
                 haserror = True
-                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
                 haserror = True
-                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
         
         index = 1
         for line in self.english_captions:
             if line.lstrip() != line:
                 haserror = True
-                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
                 haserror = True
-                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line)
+                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
 
         return not haserror
@@ -139,7 +139,7 @@ class Validator:
                         line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
                         self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
-                        line.strip() + "\n\tPrevious: " + self.english_captions[index - 1])
+                        line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
         return not haserror
@@ -155,8 +155,7 @@ def find_whitespace_right(line):
     right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
     right_whitespace_result = right_whitespace_re.match(line)
     return right_whitespace_result
-        
-    
+         
 if __name__ == "__main__":
 
     root = Tkinter.Tk()
