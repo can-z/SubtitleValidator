@@ -4,7 +4,7 @@ SubtitleValidator
 A validator for subtitle files used by YYeTS forum for translating English subtitles to Chinese.
 
 TODO
-====
+----
 
 - [ ] English ellipsis --> lower case
 - [ ] Ignore quotation marks at the end of sentences
