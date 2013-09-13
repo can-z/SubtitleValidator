@@ -158,10 +158,16 @@ def find_whitespace_right(line):
          
 if __name__ == "__main__":
 
-    root = Tkinter.Tk()
-    root.withdraw()
+    USE_TK = False
+
+    if (USE_TK) :
+        root = Tkinter.Tk()
+        root.withdraw()
     
-    filename = tkFileDialog.askopenfilename()
+        filename = tkFileDialog.askopenfilename()
+    else:
+        filename = raw_input("Enter the path of the subtitle file:" )
+
     if not filename:
         sys.exit(0)
     v = Validator(filename)
