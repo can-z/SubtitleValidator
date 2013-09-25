@@ -98,7 +98,10 @@ class Validator:
         
         index = 1
         for line in self.english_captions:
-            first_letter = line.strip()[0]
+            if len(line.strip()) > 0:
+                first_letter = line.strip()[0]
+            else:
+                first_letter = "";
             if self.initial_upper_list[index - 1]:
                 if first_letter.islower():
                     if index == 1:
@@ -114,8 +117,10 @@ class Validator:
         index = 1
 
         for line in self.english_captions:
-            first_letter = line.strip()[0]
-            
+            if len(line.strip()) > 0:
+                first_letter = line.strip()[0]
+            else:
+                first_letter = ""
             if not self.initial_upper_list[index - 1]:
                 if first_letter.isupper():
                     if index == 1:
@@ -183,7 +188,9 @@ if __name__ == "__main__":
     if not f:
         sys.exit(0)
     v = Validator(f)
-    v.parse_file()
+    if not v.parse_file():
+        v.produce_result_file()
+        sys.exit(-1)
     v.whitespace_check()
     v.upper_case_check()
     v.lower_case_check()
