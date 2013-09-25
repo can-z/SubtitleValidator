@@ -4,6 +4,7 @@ import Tkinter, tkFileDialog
 import sys
 import os
 
+
 class Validator:
     def __init__(self, filename):
         self.filename = filename
@@ -13,13 +14,11 @@ class Validator:
         self.english_captions = []
         self.parsed = False
         self.initial_upper_list = []
-        
-        
+
         self.result_file = file(os.path.basename(filename) + "result-" +\
                                 "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +\
                                 ".txt", "w")
-            
-    
+
     def parse_file(self):
         f = file(self.filename)
         
@@ -34,15 +33,13 @@ class Validator:
             else:
                 self.line_numbers.append(line)
 
-            
             line = f.readline()
             cur_line += 1
             
-            timestamp_regex = re.compile(\
-            '(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)')
+            timestamp_regex = re.compile('(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)')
             
             timestamp_result = timestamp_regex.match(line)
-            if (not timestamp_result):
+            if not timestamp_result:
                 self.error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line.strip())
                 return False
             else:
@@ -55,7 +52,7 @@ class Validator:
             line = f.readline()
             cur_line += 1
             self.english_captions.append(line)
-            end_of_sentence_re = re.compile('.*[\\.\\?\\!]$');
+            end_of_sentence_re = re.compile('.*[\\.\\?!]$')
             end_of_sentence_result = end_of_sentence_re.match(line.strip())
             if end_of_sentence_result:
                 self.initial_upper_list.append(True)
@@ -73,13 +70,10 @@ class Validator:
         
         self.parsed = True    
         return True    
-            
-                
-            
-        
+
     def whitespace_check(self):
         
-        haserror = False
+        has_error = False
         
         if not self.parsed:
             print "File not parsed. Exiting."
@@ -87,34 +81,34 @@ class Validator:
         index = 1
         for line in self.chinese_captions:
             if line.lstrip() != line:
-                haserror = True
+                has_error = True
                 self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
-                haserror = True
+                has_error = True
                 self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
         
         index = 1
         for line in self.english_captions:
             if line.lstrip() != line:
-                haserror = True
+                has_error = True
                 self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
-                haserror = True
+                has_error = True
                 self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
 
-        return not haserror
-	
+        return not has_error
+
     def upper_case_check(self):
         
         index = 0
-        haserror = False
+        has_error = False
         for line in self.english_captions:
             first_letter = line.strip()[0]
             if self.initial_upper_list[index]:
                 if first_letter.islower():
-                    haserror = True
+                    has_error = True
                     if index == 0:
                         self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: **This is the first line of the text**")
@@ -123,17 +117,17 @@ class Validator:
                         line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
-        return not haserror    
+        return not has_error
     
     def lower_case_check(self):
         index = 0
-        haserror = False
+        has_error = False
         for line in self.english_captions:
             first_letter = line.strip()[0]
             
             if not self.initial_upper_list[index]:
                 if first_letter.isupper():
-                    haserror = True
+                    has_error = True
                     if index == 0:
                         self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
                         line.strip() + "\n\tPrevious: **This is the first line of the text**")
@@ -142,14 +136,15 @@ class Validator:
                         line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
-        return not haserror
+        return not has_error
         
     def error(self, message):
         self.result_file.write("[ERROR] " + message + "\n\n")
     
     def warning(self, message):
         self.result_file.write("[WARNING] " + message + "\n\n")
-    
+
+
 def find_whitespace_right(line):
         
     right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
@@ -158,19 +153,19 @@ def find_whitespace_right(line):
          
 if __name__ == "__main__":
 
-    USE_TK = False
+    USE_TK = True
 
-    if (USE_TK) :
+    if USE_TK:
         root = Tkinter.Tk()
         root.withdraw()
     
-        filename = tkFileDialog.askopenfilename()
+        f = tkFileDialog.askopenfilename()
     else:
-        filename = raw_input("Enter the path of the subtitle file:" )
+        f = raw_input("Enter the path of the subtitle file:" )
 
-    if not filename:
+    if not f:
         sys.exit(0)
-    v = Validator(filename)
+    v = Validator(f)
     v.parse_file()
     v.whitespace_check()
     v.upper_case_check()
