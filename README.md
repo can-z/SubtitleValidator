@@ -7,7 +7,7 @@ TODO
 ----
 
 - [ ] English ellipsis --> lower case
-- [X] Ignore quotation marks at the end of sentences
+- [x] Ignore quotation marks at the end of sentences
 - [ ] Double spaces in Chinese captions
 - [ ] Spaces before hyphens in English captions
 - [ ] No space before hyphens in Chinese captions
