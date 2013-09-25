@@ -138,7 +138,28 @@ class Validator:
             
             index += 1
         return not has_error
-        
+
+    def double_whitespace_check(self):
+        """Check if any two segments are separated by != two spaces.
+    Note that this method assumes that the hyphenation is done correctly.
+    (i.e. two spaces before hyphen and no space after.)"""
+
+        index = 1
+        has_error = False
+        for line in self.chinese_captions:
+
+            line = line.replace("-", "")
+            double_whitespace_regex = re.compile('[^ ]+ [^ ]+')
+
+            if double_whitespace_regex.match(line):
+                has_error = True
+                self.error(str(index) + ": Two spaces are required between words in Chinese captions.\n\tActual: " +
+                           line.strip())
+
+            index += 1
+
+        return not has_error
+
     def error(self, message):
         self.result_file.write("[ERROR] " + message + "\n\n")
     
@@ -171,3 +192,4 @@ if __name__ == "__main__":
     v.whitespace_check()
     v.upper_case_check()
     v.lower_case_check()
+    v.double_whitespace_check()
