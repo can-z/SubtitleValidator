@@ -15,6 +15,7 @@ class Validator:
         self.english_captions = []
         self.parsed = False
         self.initial_upper_list = []
+        self.error_list = []
 
         self.result_file = file(os.path.basename(filename) + "result-" +
                                 "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
@@ -29,7 +30,7 @@ class Validator:
         
         while line != "":
             if not line.strip().isdigit():
-                self.error("Line " + str(cur_line) + ": Invalid subtitle index \nActual: " + line.strip())
+                self.error(cur_line, "Invalid subtitle index \nActual: " + line.strip())
                 return False
             else:
                 self.line_numbers.append(line)
@@ -41,7 +42,7 @@ class Validator:
             
             timestamp_result = timestamp_regex.match(line)
             if not timestamp_result:
-                self.error("Line " + str(cur_line) + ": Invalid timestamp line \nActual: " + line.strip())
+                self.error(cur_line, "Invalid timestamp line \nActual: " + line.strip())
                 return False
             else:
                 self.timestamps.append(line)
@@ -63,7 +64,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             if line.strip() != "":
-                self.error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line.strip())
+                self.error(cur_line, "Empty line expected \nActual: " + line.strip())
                 return False
                 
             line = parse_file.readline()
@@ -73,71 +74,58 @@ class Validator:
         return True    
 
     def whitespace_check(self):
-        
-        has_error = False
-        
+
         if not self.parsed:
             print "File not parsed. Exiting."
             
         index = 1
         for line in self.chinese_captions:
             if line.lstrip() != line:
-                has_error = True
-                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
+                self.error(index, "Whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
-                has_error = True
-                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
+                self.error(index, "Whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
         
         index = 1
         for line in self.english_captions:
             if line.lstrip() != line:
-                has_error = True
-                self.error(str(index) + ": whitespace at the beginning of sentence\n\tActual: " + line.strip())
+                self.error(index, "Whitespace at the beginning of sentence\n\tActual: " + line.strip())
             if find_whitespace_right(line):
-                has_error = True
-                self.error(str(index) + ": whitespace at the end of sentence\n\tActual: " + line.strip())
+                self.error(index, "Whitespace at the end of sentence\n\tActual: " + line.strip())
             index += 1
-
-        return not has_error
 
     def upper_case_check(self):
         
-        index = 0
-        has_error = False
+        index = 1
         for line in self.english_captions:
             first_letter = line.strip()[0]
-            if self.initial_upper_list[index]:
+            if self.initial_upper_list[index - 1]:
                 if first_letter.islower():
-                    has_error = True
-                    if index == 0:
-                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +
+                    if index == 1:
+                        self.error(index, "Expect upper case letter\n\tActual: " +
                                    line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +
-                                   line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
+                        self.error(index, "Expect upper case letter\n\tActual: " +
+                                   line.strip() + "\n\tPrevious: " + self.english_captions[index - 2].strip())
             
             index += 1
-        return not has_error
     
     def lower_case_check(self):
-        index = 0
-        has_error = False
+        index = 1
+
         for line in self.english_captions:
             first_letter = line.strip()[0]
             
-            if not self.initial_upper_list[index]:
+            if not self.initial_upper_list[index - 1]:
                 if first_letter.isupper():
-                    has_error = True
-                    if index == 0:
-                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +
+                    if index == 1:
+                        self.warning(index, "Expect lower case letter\n\tActual: " +
                                      line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +
-                                     line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
+                        self.warning(index, "Expect lower case letter\n\tActual: " +
+                                     line.strip() + "\n\tPrevious: " + self.english_captions[index - 2].strip())
             
             index += 1
-        return not has_error
 
     def double_whitespace_check(self):
         """Check if any two segments are separated by != two spaces.
@@ -153,18 +141,25 @@ class Validator:
 
             if double_whitespace_regex.match(line):
                 has_error = True
-                self.error(str(index) + ": Two spaces are required between words in Chinese captions.\n\tActual: " +
+                self.error(index, "Two spaces are required between words in Chinese captions.\n\tActual: " +
                            line.strip())
 
             index += 1
 
         return not has_error
 
-    def error(self, message):
-        self.result_file.write("[ERROR] " + message + "\n\n")
+    def error(self, line_number, message):
+        self.error_list.append((line_number, "[ERROR] " + message))
     
-    def warning(self, message):
-        self.result_file.write("[WARNING] " + message + "\n\n")
+    def warning(self, line_number, message):
+        self.error_list.append((line_number, "[WARNING] " + message))
+
+    def produce_result_file(self):
+
+        self.error_list.sort(key=lambda x: x[0])
+
+        for e in self.error_list:
+            self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
 
 
 def find_whitespace_right(line):
@@ -193,3 +188,4 @@ if __name__ == "__main__":
     v.upper_case_check()
     v.lower_case_check()
     v.double_whitespace_check()
+    v.produce_result_file()
