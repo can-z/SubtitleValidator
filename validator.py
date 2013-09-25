@@ -138,20 +138,42 @@ class Validator:
     (i.e. two spaces before hyphen and no space after.)"""
 
         index = 1
-        has_error = False
+
         for line in self.chinese_captions:
 
             line = line.replace("-", "")
             double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
-                has_error = True
                 self.error(index, "Two spaces are required between words in Chinese captions.\n\tActual: " +
                            line.strip())
 
             index += 1
 
-        return not has_error
+    def single_whitespace_check(self):
+        """English captions only. Assume hyphenation is correct (one space before and after the hyphen)."""
+
+        index = 1
+        for line in self.english_captions:
+
+            line = line.replace("- ", "")
+
+            # For some reason, re does not work on this one (Python 2.7). Try the re: [^ ]+((\s)\s+)[^ ]+
+            # or [^ ]+(( ) +)[^ ]+
+            # Hence this weird solution.
+            prev = False
+            for w in line:
+                if w == " ":
+                    if prev:
+                        self.error(index, "One space is required between words in English captions.\n\tActual: " +
+                                          line.strip())
+                        break
+                    else:
+                        prev = True
+                else:
+                    prev = False
+
+            index += 1
 
     def error(self, line_number, message):
         self.error_list.append((line_number, "[ERROR] " + message))
@@ -195,4 +217,5 @@ if __name__ == "__main__":
     v.upper_case_check()
     v.lower_case_check()
     v.double_whitespace_check()
+    v.single_whitespace_check()
     v.produce_result_file()
