@@ -142,7 +142,7 @@ class Validator:
         for line in self.chinese_captions:
 
             line = line.replace("-", "")
-            double_whitespace_regex = re.compile('[^ ]+ [^ ]+')
+            double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
                 has_error = True
