@@ -53,7 +53,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             self.english_captions.append(line)
-            end_of_sentence_re = re.compile('.*[\\.\\?!]$')
+            end_of_sentence_re = re.compile('.*[\\.\\?!](\'|")*$')
             end_of_sentence_result = end_of_sentence_re.match(line.strip())
             if end_of_sentence_result:
                 self.initial_upper_list.append(True)
