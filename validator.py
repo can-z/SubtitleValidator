@@ -1,6 +1,7 @@
 import re
 import datetime
-import Tkinter, tkFileDialog
+import Tkinter
+import tkFileDialog
 import sys
 import os
 
@@ -15,16 +16,16 @@ class Validator:
         self.parsed = False
         self.initial_upper_list = []
 
-        self.result_file = file(os.path.basename(filename) + "result-" +\
-                                "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +\
+        self.result_file = file(os.path.basename(filename) + "result-" +
+                                "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
                                 ".txt", "w")
 
     def parse_file(self):
-        f = file(self.filename)
+        parse_file = file(self.filename)
         
-        line = f.readline()
+        line = parse_file.readline()
         cur_line = 1
-        self.initial_upper_list.append(True);
+        self.initial_upper_list.append(True)
         
         while line != "":
             if not line.strip().isdigit():
@@ -33,7 +34,7 @@ class Validator:
             else:
                 self.line_numbers.append(line)
 
-            line = f.readline()
+            line = parse_file.readline()
             cur_line += 1
             
             timestamp_regex = re.compile('(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)')
@@ -45,11 +46,11 @@ class Validator:
             else:
                 self.timestamps.append(line)
             
-            line = f.readline()
+            line = parse_file.readline()
             cur_line += 1
             self.chinese_captions.append(line)
             
-            line = f.readline()
+            line = parse_file.readline()
             cur_line += 1
             self.english_captions.append(line)
             end_of_sentence_re = re.compile('.*[\\.\\?!]$')
@@ -59,13 +60,13 @@ class Validator:
             else:
                 self.initial_upper_list.append(False)
             
-            line = f.readline()
+            line = parse_file.readline()
             cur_line += 1
             if line.strip() != "":
                 self.error("Line " + str(cur_line) + ": Empty line expected \nActual: " + line.strip())
                 return False
                 
-            line = f.readline()
+            line = parse_file.readline()
             cur_line += 1
         
         self.parsed = True    
@@ -110,11 +111,11 @@ class Validator:
                 if first_letter.islower():
                     has_error = True
                     if index == 0:
-                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
-                        line.strip() + "\n\tPrevious: **This is the first line of the text**")
+                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +
+                                   line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +\
-                        line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
+                        self.error(str(index + 1) + ": Expect upper case letter\n\tActual: " +
+                                   line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
         return not has_error
@@ -129,11 +130,11 @@ class Validator:
                 if first_letter.isupper():
                     has_error = True
                     if index == 0:
-                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
-                        line.strip() + "\n\tPrevious: **This is the first line of the text**")
+                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +
+                                     line.strip() + "\n\tPrevious: **This is the first line of the text**")
                     else:
-                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +\
-                        line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
+                        self.warning(str(index + 1) + ": Expect lower case letter\n\tActual: " +
+                                     line.strip() + "\n\tPrevious: " + self.english_captions[index - 1].strip())
             
             index += 1
         return not has_error
