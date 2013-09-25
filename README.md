@@ -6,7 +6,7 @@ A validator for subtitle files used by YYeTS forum for translating English subti
 TODO
 ----
 
-- [ ] English ellipsis --> lower case
+- [ ] English ellipsis --> manual
 - [x] Ignore quotation marks at the end of sentences
 - [x] Double spaces in Chinese captions
 - [x] Single space in English captions
