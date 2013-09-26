@@ -55,7 +55,7 @@ class Validator:
             cur_line += 1
             self.english_captions.append(line)
             end_of_sentence_re = re.compile('.*[\\.\\?!\\*](\'|")*$')
-            end_of_sentence_result = end_of_sentence_re.match(line.strip())
+            end_of_sentence_result = end_of_sentence_re.match(line.replace("...", "").strip())
             if end_of_sentence_result:
                 self.initial_upper_list.append(True)
             else:
@@ -175,11 +175,27 @@ class Validator:
 
             index += 1
 
+    def ellipsis_check(self):
+
+        index = 1
+        for line in self.english_captions:
+            if "..." in line:
+                if index < len(self.english_captions):
+                    self.manual(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
+                                       line.strip() + "\n\tNext: " + self.english_captions[index].strip())
+                else:
+                    self.manual(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
+                                       line.strip() + "\n\tNext: **This is the last line of the file**")
+            index += 1
+
     def error(self, line_number, message):
         self.error_list.append((line_number, "[ERROR] " + message))
     
     def warning(self, line_number, message):
         self.error_list.append((line_number, "[WARNING] " + message))
+
+    def manual(self, line_number, message):
+        self.error_list.append((line_number, "[MANUAL] " + message))
 
     def produce_result_file(self):
 
@@ -218,4 +234,5 @@ if __name__ == "__main__":
     v.lower_case_check()
     v.double_whitespace_check()
     v.single_whitespace_check()
+    v.ellipsis_check()
     v.produce_result_file()
