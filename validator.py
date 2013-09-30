@@ -5,6 +5,8 @@ import tkFileDialog
 import sys
 import os
 
+WRITE_TO_FILE = True
+
 
 class Validator:
     def __init__(self, filename):
@@ -17,9 +19,10 @@ class Validator:
         self.initial_upper_list = []
         self.error_list = []
 
-        self.result_file = file(os.path.basename(filename) + "result-" +
-                                "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
-                                ".txt", "w")
+        if WRITE_TO_FILE:
+            self.result_file = file(os.path.basename(filename) + "result-" +
+                                    "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
+                                    ".txt", "w")
 
     def parse_file(self):
         parse_file = file(self.filename)
@@ -202,7 +205,10 @@ class Validator:
         self.error_list.sort(key=lambda x: x[0])
 
         for e in self.error_list:
-            self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
+            if WRITE_TO_FILE:
+                self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
+            else:
+                print str(e[0]) + ": " + e[1] + "\n"
 
 
 def find_whitespace_right(line):
@@ -210,7 +216,8 @@ def find_whitespace_right(line):
     right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
     right_whitespace_result = right_whitespace_re.match(line)
     return right_whitespace_result
-         
+
+
 if __name__ == "__main__":
 
     USE_TK = True
