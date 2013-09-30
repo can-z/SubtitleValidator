@@ -5,11 +5,14 @@ import tkFileDialog
 import sys
 import os
 
-WRITE_TO_FILE = True
+
+USE_TK = True
 
 
 class Validator:
-    def __init__(self, filename):
+    def __init__(self, filename, write_to_file):
+
+        self.write_to_file = write_to_file
         self.filename = filename
         self.line_numbers = []
         self.timestamps = []
@@ -19,7 +22,7 @@ class Validator:
         self.initial_upper_list = []
         self.error_list = []
 
-        if WRITE_TO_FILE:
+        if write_to_file:
             self.result_file = file(os.path.basename(filename) + "result-" +
                                     "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
                                     ".txt", "w")
@@ -220,8 +223,6 @@ def find_whitespace_right(line):
 
 if __name__ == "__main__":
 
-    USE_TK = True
-
     if USE_TK:
         root = Tkinter.Tk()
         root.withdraw()
@@ -232,7 +233,7 @@ if __name__ == "__main__":
 
     if not f:
         sys.exit(0)
-    v = Validator(f)
+    v = Validator(f, True)
     if not v.parse_file():
         v.produce_result_file()
         sys.exit(-1)
