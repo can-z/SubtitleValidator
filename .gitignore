@@ -34,3 +34,13 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Subtitle files
+*.srt
+
+# virtualenv
+venv
+
+# PyCharm project files
+.idea
+

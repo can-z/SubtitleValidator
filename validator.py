@@ -209,10 +209,7 @@ class Validator:
         self.error_list.sort(key=lambda x: x[0])
 
         for e in self.error_list:
-            if WRITE_TO_FILE:
-                self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
-            else:
-                print str(e[0]) + ": " + e[1] + "\n"
+            self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
 
 
 def find_whitespace_right(line):
