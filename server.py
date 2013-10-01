@@ -9,11 +9,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 def output(v):
-    result = ""
+    result_string = ""
     for e in v.error_list:
-        result += str(e[0]) + ": " + e[1] + "\n\n"
+        result_string += str(e[0]) + ": " + e[1] + "\n\n"
 
-    return result
+    return result_string
 
 
 @app.route("/")
@@ -27,34 +27,20 @@ def upload_file():
         f = request.files['subtitle_file']
         filename = utils.secure_filename(f.filename)
         f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('uploaded_file',
+        return redirect(url_for('result',
                                 filename=filename))
 
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
-
-
-@app.route("/result")
-def web_main():
-    v = validator.Validator("sample.srt", False)
+@app.route("/result/<filename>")
+def result(filename):
+    v = validator.Validator(os.path.join(app.config['UPLOAD_FOLDER'], filename), False)
     if not v.parse_file():
         res = output(v)
-        return render_template('result.html', res=res)
-    v.whitespace_check()
-    v.upper_case_check()
-    v.lower_case_check()
-    v.double_whitespace_check()
-    v.single_whitespace_check()
-    v.ellipsis_check()
-
-    v.sort_errors()
+        return res
+    v.perform_all_checks()
 
     res = output(v)
-    return render_template('result.html', res=res)
-
+    return res
 
 if __name__ == "__main__":
     app.run(debug=True)

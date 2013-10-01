@@ -109,7 +109,7 @@ class Validator:
             if len(line.strip()) > 0:
                 first_letter = line.strip()[0]
             else:
-                first_letter = "";
+                first_letter = ""
             if self.initial_upper_list[index - 1]:
                 if first_letter.islower():
                     if index == 1:
@@ -213,6 +213,16 @@ class Validator:
         for e in self.error_list:
             self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
 
+    def perform_all_checks(self):
+        self.whitespace_check()
+        self.upper_case_check()
+        self.lower_case_check()
+        self.double_whitespace_check()
+        self.single_whitespace_check()
+        self.ellipsis_check()
+
+        self.sort_errors()
+
 
 def find_whitespace_right(line):
         
@@ -237,12 +247,4 @@ if __name__ == "__main__":
     if not v.parse_file():
         v.produce_result_file()
         sys.exit(-1)
-    v.whitespace_check()
-    v.upper_case_check()
-    v.lower_case_check()
-    v.double_whitespace_check()
-    v.single_whitespace_check()
-    v.ellipsis_check()
-    v.produce_result_file()
-
-    v.sort_errors()
+    v.perform_all_checks()
