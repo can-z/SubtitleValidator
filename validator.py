@@ -1,13 +1,14 @@
 import re
 import datetime
-import Tkinter
-import tkFileDialog
 import sys
 import os
 
 
-USE_TK = True
+USE_TK = False
 
+if USE_TK:
+    import Tkinter
+    import tkFileDialog
 
 class Validator:
     def __init__(self, filename, write_to_file):
