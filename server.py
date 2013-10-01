@@ -1,7 +1,3 @@
-import re
-import datetime
-import sys
-import os
 from flask import Flask, render_template
 import validator
 
@@ -20,12 +16,13 @@ def output(v):
 def index():
     return render_template('index.html')
 
+
 @app.route("/result")
 def web_main():
     v = validator.Validator("sample.srt", False)
     if not v.parse_file():
-        output(v)
-        return
+        res = output(v)
+        return render_template('result.html', res=res)
     v.whitespace_check()
     v.upper_case_check()
     v.lower_case_check()
@@ -33,7 +30,10 @@ def web_main():
     v.single_whitespace_check()
     v.ellipsis_check()
 
-    return output(v)
+    v.sort_errors()
+
+    res = output(v)
+    return render_template('result.html', res=res)
 
 
 if __name__ == "__main__":

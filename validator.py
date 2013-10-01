@@ -10,6 +10,7 @@ if USE_TK:
     import Tkinter
     import tkFileDialog
 
+
 class Validator:
     def __init__(self, filename, write_to_file):
 
@@ -204,9 +205,10 @@ class Validator:
     def manual(self, line_number, message):
         self.error_list.append((line_number, "[MANUAL] " + message))
 
-    def produce_result_file(self):
-
+    def sort_errors(self):
         self.error_list.sort(key=lambda x: x[0])
+
+    def produce_result_file(self):
 
         for e in self.error_list:
             self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
@@ -242,3 +244,5 @@ if __name__ == "__main__":
     v.single_whitespace_check()
     v.ellipsis_check()
     v.produce_result_file()
+
+    v.sort_errors()
