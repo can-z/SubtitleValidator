@@ -1,7 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory
+from werkzeug import utils
+import os
 import validator
 
+UPLOAD_FOLDER = './uploads/'
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 def output(v):
@@ -15,6 +19,22 @@ def output(v):
 @app.route("/")
 def index():
     return render_template('index.html')
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        f = request.files['subtitle_file']
+        filename = utils.secure_filename(f.filename)
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('uploaded_file',
+                                filename=filename))
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
 
 
 @app.route("/result")
