@@ -187,13 +187,13 @@ class Validator:
 
         index = 1
         for line in self.english_captions:
-            if "..." in line:
+            if line.strip().endswith("..."):
                 if index < len(self.english_captions):
                     self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
-                                       line.strip() + "\n\tNext: " + self.english_captions[index].strip())
+                                        line.strip() + "\n\tNext: " + self.english_captions[index].strip())
                 else:
                     self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
-                                       line.strip() + "\n\tNext: **This is the last line of the file**")
+                                        line.strip() + "\n\tNext: **This is the last line of the file**")
             index += 1
 
     def error(self, line_number, message):
