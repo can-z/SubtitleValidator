@@ -57,7 +57,7 @@ class Validator:
             
             line = parse_file.readline()
             cur_line += 1
-            self.chinese_captions.append(line)
+            self.chinese_captions.append(line.decode(encoding='gb2312'))
             
             line = parse_file.readline()
             cur_line += 1

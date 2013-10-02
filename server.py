@@ -36,11 +36,11 @@ def result(filename):
     v = validator.Validator(os.path.join(app.config['UPLOAD_FOLDER'], filename), False)
     if not v.parse_file():
         res = output(v)
-        return res
+        return render_template("result.html", res=res)
     v.perform_all_checks()
 
     res = output(v)
-    return res
+    return render_template("result.html", res=res)
 
 if __name__ == "__main__":
     app.run(debug=True)
