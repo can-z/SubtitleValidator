@@ -38,7 +38,7 @@ class Validator:
         
         while line != "":
             if not line.strip().isdigit():
-                self.error(cur_line, "Invalid subtitle index \nActual: " + line.strip())
+                self.error(cur_line, message_with_context("invalid_line_number", line.strip()))
                 return False
             else:
                 self.line_numbers.append(line)
@@ -50,7 +50,7 @@ class Validator:
             
             timestamp_result = timestamp_regex.match(line)
             if not timestamp_result:
-                self.error(cur_line, "Invalid timestamp line \nActual: " + line.strip())
+                self.error(cur_line, message_with_context("invalid_time_stamp", line.strip()))
                 return False
             else:
                 self.timestamps.append(line)
@@ -72,7 +72,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             if line.strip() != "":
-                self.error(cur_line, get_text("emptyLineRequired") + "\n" + get_text("actual") + ": " + line.strip())
+                self.error(cur_line, message_with_context("empty_line_required", line.strip()))
                 return False
                 
             line = parse_file.readline()
@@ -89,17 +89,17 @@ class Validator:
         index = 1
         for line in self.chinese_captions:
             if line.lstrip() != line:
-                self.error(index, "Whitespace at the beginning of sentence\n\tActual: " + line.strip())
+                self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
             if find_whitespace_right(line):
-                self.error(index, "Whitespace at the end of sentence\n\tActual: " + line.strip())
+                self.error(index, message_with_context("extra_whitespace_end", line.strip()))
             index += 1
         
         index = 1
         for line in self.english_captions:
             if line.lstrip() != line:
-                self.error(index, "Whitespace at the beginning of sentence\n\tActual: " + line.strip())
+                self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
             if find_whitespace_right(line):
-                self.error(index, "Whitespace at the end of sentence\n\tActual: " + line.strip())
+                self.error(index, message_with_context("extra_whitespace_end", line.strip()))
             index += 1
 
     def upper_case_check(self):
@@ -113,11 +113,11 @@ class Validator:
             if self.initial_upper_list[index - 1]:
                 if first_letter.islower():
                     if index == 1:
-                        self.error(index, "Expect upper case letter\n\tActual: " +
-                                   line.strip() + "\n\tPrevious: **This is the first line of the text**")
+                        self.error(index, message_with_context("require_upper_case", line.strip(),
+                                                               prev_line="**This is the first line of the text**"))
                     else:
-                        self.error(index, "Expect upper case letter\n\tActual: " +
-                                   line.strip() + "\n\tPrevious: " + self.english_captions[index - 2].strip())
+                        self.error(index, message_with_context("require_upper_case", line.strip(),
+                                                               prev_line=self.english_captions[index - 2].strip()))
             
             index += 1
     
@@ -132,11 +132,11 @@ class Validator:
             if not self.initial_upper_list[index - 1]:
                 if first_letter.isupper():
                     if index == 1:
-                        self.warning(index, "Expect lower case letter\n\tActual: " +
-                                     line.strip() + "\n\tPrevious: **This is the first line of the text**")
+                        self.warning(index, message_with_context("require_lower_case", line.strip(),
+                                                                 prev_line="**This is the first line of the text**"))
                     else:
-                        self.warning(index, "Expect lower case letter\n\tActual: " +
-                                     line.strip() + "\n\tPrevious: " + self.english_captions[index - 2].strip())
+                        self.warning(index, message_with_context("require_lower_case", line.strip(),
+                                                                 prev_line=self.english_captions[index - 2].strip()))
             
             index += 1
 
@@ -153,8 +153,7 @@ class Validator:
             double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
-                self.error(index, "Two spaces are required between words in Chinese captions.\n\tActual: " +
-                           line.strip())
+                self.error(index, message_with_context("two_space_chinese", line.strip()))
 
             index += 1
 
@@ -173,8 +172,7 @@ class Validator:
             for w in line:
                 if w == " ":
                     if prev:
-                        self.error(index, "One space is required between words in English captions.\n\tActual: " +
-                                          line.strip())
+                        self.error(index, message_with_context("one_space_english", line.strip()))
                         break
                     else:
                         prev = True
@@ -189,11 +187,12 @@ class Validator:
         for line in self.english_captions:
             if line.strip().endswith("..."):
                 if index < len(self.english_captions):
-                    self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
-                                        line.strip() + "\n\tNext: " + self.english_captions[index].strip())
+                    self.warning(index, message_with_context("ellipsis", line.strip(),
+                                                             next_line=self.english_captions[index].strip()))
                 else:
-                    self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
-                                        line.strip() + "\n\tNext: **This is the last line of the file**")
+                    self.warning(index, message_with_context("ellipsis", line.strip(),
+                                                             next_line="**This is the last line of the text**"))
+
             index += 1
 
     def error(self, line_number, message):
@@ -230,14 +229,28 @@ def find_whitespace_right(line):
 
 def get_text(key):
 
-    text_file = file("text.config")
+    text_file = file("text.properties")
 
     for line in text_file:
         if len(line.split("=")) == 2:
             if key == line.split("=")[0]:
-                return line.split("=")[1]
-
+                return line.split("=")[1].strip()
     raise IOError("Key " + key + " does not exist")
+
+
+def message_with_context(key, cur_line, prev_line=None, next_line=None):
+
+    res = get_text(key) + "\n\t" + get_text("actual") + ": " + cur_line
+    if prev_line:
+        res += "\n\t" + get_text("previous") + ": " + prev_line
+    if next_line:
+        res += "\n\t" + get_text("next") + ": " + next_line
+
+    return res
+
+
+
+
 
 if __name__ == "__main__":
 

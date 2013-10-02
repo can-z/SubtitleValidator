@@ -12,14 +12,12 @@ def output(v, is_format_error):
     result_string = ""
 
     if is_format_error:
-        result_string += "There are errors in the format of your subtitle file, and your file is not checked. Please " \
-                         "make sure each of your subtitles conforms to the following format:\n" \
-                         "[LINE NUMBER]\n" \
-                         "[TIMESTAMP](example: 00:16:43,162 --> 00:16:44,400)\n" \
-                         "[CHINESE SUBTITLE LINE]\n" \
-                         "[ENGLISH SUBTITLE LINE]\n" \
-                         "[EMPTY LINE]\n\n" \
-                         "Below is the specific format errors found in your file:\n\n"
+        result_string += validator.get_text("format_error_message_1").decode("utf-8") + "\n"\
+            + validator.get_text("format_error_message_2").decode("utf-8") + "\n"\
+            + validator.get_text("format_error_message_3").decode("utf-8") + "\n"\
+            + validator.get_text("format_error_message_4").decode("utf-8") + "\n"\
+            + validator.get_text("format_error_message_5").decode("utf-8") + "\n"\
+            + validator.get_text("format_error_message_6").decode("utf-8") + "\n\n"
 
     for e in v.error_list:
 
