@@ -26,6 +26,9 @@ def upload_file():
     if request.method == 'POST':
         f = request.files['subtitle_file']
         filename = utils.secure_filename(f.filename)
+        if filename is None or filename == "":
+            return redirect("/")
+
         f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return redirect(url_for('result',
                                 filename=filename))
