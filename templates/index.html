@@ -1,11 +1,33 @@
 <html>
     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>Subtitle Validator</title>
     </head>
     <body>
-        <form id="file_upload" method="post" action="/upload" enctype=multipart/form-data>
-            <input type=file name=subtitle_file>
-            <input type="submit" value="Upload">
-        </form>
+        <h1>人人字幕组格式检查器</h1>
+        <p>本格式检查器在时间机器的格式检查之上增加以下功能：</p>
+
+        <h2>[ERROR](100%需要修正)</h2>
+        <ul>
+            <li>中英字幕行前后多余的空格</li>
+            <li>英文句号/问号/感叹号/星号(歌词)结尾的句子下一句句首必须大写</li>
+            <li>中文行空格需要两个半角空格</li>
+            <li>英文行空格需要一个半角空格</li>
+        </ul>
+
+        <h2>[WARNING](有可能错误，需要复查)</h2>
+        <ul>
+            <li>逗号或无标点结尾的句子下一句句首大写</li>
+            <li>省略号之后的句首字母大小写需复查</li>
+        </ul>
+        <div style="width:400px; height:100px; border:2px solid">
+            <form id="file_upload" method="post" action="/upload" enctype=multipart/form-data>
+                <p>选择一个字幕文件(.srt文件)并点击上传</p>
+                <input type=file name=subtitle_file value="选择字幕文件">
+                <input type="submit" value="上传">
+            </form>
+        </div>
+        <p>有兴趣参与本程序的开发？<a href="https://github.com/raitorm/SubtitleValidator" target="_blank">Fork me on GitHub</a></p>
+        <p>对程序有疑问或建议？发email到 raitorm大拇指gmail (gmail后面要有点抗母，大拇指是什么不用我说吧？）</p>
     </body>
 </html>

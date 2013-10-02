@@ -189,10 +189,10 @@ class Validator:
         for line in self.english_captions:
             if "..." in line:
                 if index < len(self.english_captions):
-                    self.manual(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
+                    self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
                                        line.strip() + "\n\tNext: " + self.english_captions[index].strip())
                 else:
-                    self.manual(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
+                    self.warning(index, "Found Ellipsis! Check capitalization of the next line\n\tActual: " +
                                        line.strip() + "\n\tNext: **This is the last line of the file**")
             index += 1
 
@@ -201,9 +201,6 @@ class Validator:
     
     def warning(self, line_number, message):
         self.error_list.append((line_number, "[WARNING] " + message))
-
-    def manual(self, line_number, message):
-        self.error_list.append((line_number, "[MANUAL] " + message))
 
     def sort_errors(self):
         self.error_list.sort(key=lambda x: x[0])
