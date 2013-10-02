@@ -250,9 +250,9 @@ def get_text(key):
 def message_with_context(key, cur_line, prev_line=None, next_line=None):
 
     res = get_text(key) + "\n\t" + get_text("actual") + ": " + cur_line
-    if prev_line:
+    if prev_line is not None:
         res += "\n\t" + get_text("previous") + ": " + prev_line
-    if next_line:
+    if next_line is not None:
         res += "\n\t" + get_text("next") + ": " + next_line
 
     return res
