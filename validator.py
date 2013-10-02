@@ -1,14 +1,6 @@
 import re
 import datetime
-import sys
 import os
-
-
-USE_TK = True
-
-if USE_TK:
-    import Tkinter
-    import tkFileDialog
 
 
 class Validator:
@@ -57,7 +49,7 @@ class Validator:
             
             line = parse_file.readline()
             cur_line += 1
-            self.chinese_captions.append(line)
+            self.chinese_captions.append(smart_decode(line).encode("utf-8"))
             
             line = parse_file.readline()
             cur_line += 1
@@ -204,10 +196,27 @@ class Validator:
     def sort_errors(self):
         self.error_list.sort(key=lambda x: x[0])
 
-    def produce_result_file(self):
+    def produce_result_file(self, is_format_error):
+        result_string = ""
+
+        if is_format_error:
+            result_string += get_text("format_error_message_1").decode("utf-8") + "\n"\
+                + get_text("format_error_message_2").decode("utf-8") + "\n"\
+                + get_text("format_error_message_3").decode("utf-8") + "\n"\
+                + get_text("format_error_message_4").decode("utf-8") + "\n"\
+                + get_text("format_error_message_5").decode("utf-8") + "\n"\
+                + get_text("format_error_message_6").decode("utf-8") + "\n\n"
 
         for e in self.error_list:
-            self.result_file.write(str(e[0]) + ": " + e[1] + "\n\n")
+
+                decoded_message = smart_decode(e[1])
+
+                result_string += str(e[0]) + ": " + decoded_message + "\n\n"
+
+        if self.write_to_file:
+            self.result_file.write(result_string.encode("utf-8"))
+
+        return result_string
 
     def perform_all_checks(self):
         self.whitespace_check()
@@ -249,24 +258,11 @@ def message_with_context(key, cur_line, prev_line=None, next_line=None):
     return res
 
 
+def smart_decode(s):
 
+    try:
+        decoded_message = s.decode("utf-8")
+    except UnicodeDecodeError:
+        decoded_message = s.decode("gb2312")
 
-
-if __name__ == "__main__":
-
-    if USE_TK:
-        root = Tkinter.Tk()
-        root.withdraw()
-    
-        f = tkFileDialog.askopenfilename()
-    else:
-        f = raw_input("Enter the path of the subtitle file:" )
-
-    if not f:
-        sys.exit(0)
-    v = Validator(f, True)
-    if not v.parse_file():
-        v.produce_result_file()
-        sys.exit(-1)
-    v.perform_all_checks()
-    v.produce_result_file()
+    return decoded_message
