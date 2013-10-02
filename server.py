@@ -8,8 +8,19 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-def output(v):
+def output(v, is_format_error):
     result_string = ""
+
+    if is_format_error:
+        result_string += "There are errors in the format of your subtitle file, and your file is not checked. Please " \
+                         "make sure each of your subtitles conforms to the following format:\n" \
+                         "[LINE NUMBER]\n" \
+                         "[TIMESTAMP](example: 00:16:43,162 --> 00:16:44,400)\n" \
+                         "[CHINESE SUBTITLE LINE]\n" \
+                         "[ENGLISH SUBTITLE LINE]\n" \
+                         "[EMPTY LINE]\n\n" \
+                         "Below is the specific format errors found in your file:\n\n"
+
     for e in v.error_list:
         result_string += str(e[0]) + ": " + e[1] + "\n\n"
 
@@ -38,11 +49,11 @@ def upload_file():
 def result(filename):
     v = validator.Validator(os.path.join(app.config['UPLOAD_FOLDER'], filename), False)
     if not v.parse_file():
-        res = output(v)
+        res = output(v, True)
         return render_template("result.html", res=res)
     v.perform_all_checks()
 
-    res = output(v)
+    res = output(v, False)
     return render_template("result.html", res=res)
 
 if __name__ == "__main__":
