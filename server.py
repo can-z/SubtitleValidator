@@ -22,7 +22,13 @@ def output(v, is_format_error):
                          "Below is the specific format errors found in your file:\n\n"
 
     for e in v.error_list:
-        result_string += str(e[0]) + ": " + e[1] + "\n\n"
+
+            try:
+                decoded_message = e[1].decode("utf-8")
+            except UnicodeDecodeError:
+                decoded_message = e[1].decode("gb2312")
+
+            result_string += str(e[0]) + ": " + decoded_message + "\n\n"
 
     return result_string
 

@@ -4,7 +4,7 @@ import sys
 import os
 
 
-USE_TK = False
+USE_TK = True
 
 if USE_TK:
     import Tkinter
@@ -25,14 +25,14 @@ class Validator:
         self.error_list = []
 
         if write_to_file:
-            self.result_file = file(os.path.basename(filename) + "result-" +
+            self.result_file = file("local_results/" + os.path.basename(filename) + "result-" +
                                     "-" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") +
                                     ".txt", "w")
 
     def parse_file(self):
         parse_file = file(self.filename)
         
-        line = parse_file.readline()
+        line = parse_file.readline().decode("utf-8-sig")  # Remove BOM from first line
         cur_line = 1
         self.initial_upper_list.append(True)
         
@@ -57,7 +57,7 @@ class Validator:
             
             line = parse_file.readline()
             cur_line += 1
-            self.chinese_captions.append(line.decode(encoding='gb2312'))
+            self.chinese_captions.append(line)
             
             line = parse_file.readline()
             cur_line += 1
@@ -72,7 +72,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             if line.strip() != "":
-                self.error(cur_line, "Empty line expected \nActual: " + line.strip())
+                self.error(cur_line, get_text("emptyLineRequired") + "\n" + get_text("actual") + ": " + line.strip())
                 return False
                 
             line = parse_file.readline()
@@ -228,6 +228,17 @@ def find_whitespace_right(line):
     return right_whitespace_result
 
 
+def get_text(key):
+
+    text_file = file("text.config")
+
+    for line in text_file:
+        if len(line.split("=")) == 2:
+            if key == line.split("=")[0]:
+                return line.split("=")[1]
+
+    raise IOError("Key " + key + " does not exist")
+
 if __name__ == "__main__":
 
     if USE_TK:
@@ -245,3 +256,4 @@ if __name__ == "__main__":
         v.produce_result_file()
         sys.exit(-1)
     v.perform_all_checks()
+    v.produce_result_file()
