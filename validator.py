@@ -55,6 +55,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             self.english_captions.append(line)
+            has_english_line = True
             if len(line.strip()) > 0: 
                 end_of_sentence_re = re.compile('.*[\\.\\?!\\*](\'|")*$')
                 end_of_sentence_result = end_of_sentence_re.match(line.replace("...", "").strip())
@@ -65,16 +66,19 @@ class Validator:
                     self.initial_upper_list.append(False)
                     is_current_upper = False
             else:
+                has_english_line = False
                 self.initial_upper_list.append(is_current_upper)
-            
-            line = parse_file.readline()
-            cur_line += 1
+
+            if has_english_line:
+                line = parse_file.readline()
+                cur_line += 1
             if line.strip() != "":
                 self.error(cur_line, message_with_context("empty_line_required", line.strip()))
                 return False
-                
-            line = parse_file.readline()
-            cur_line += 1
+
+            while line != "" and line.strip() == "":
+                line = parse_file.readline()
+                cur_line += 1
         
         self.parsed = True    
         return True    
