@@ -101,10 +101,9 @@ class Validator:
         
         index = 1
         for line in self.english_captions:
-            if len(line.strip()) > 0:
-                first_letter = line.strip()[0]
-            else:
-                first_letter = ""
+
+            first_letter = find_first_letter(line)
+
             if self.initial_upper_list[index - 1]:
                 if first_letter.islower():
                     if index == 1:
@@ -120,10 +119,9 @@ class Validator:
         index = 1
 
         for line in self.english_captions:
-            if len(line.strip()) > 0:
-                first_letter = line.strip()[0]
-            else:
-                first_letter = ""
+            
+            first_letter = find_first_letter(line)
+            
             if not self.initial_upper_list[index - 1]:
                 if first_letter.isupper():
                     if index == 1:
@@ -269,3 +267,13 @@ def smart_decode(s):
         decoded_message = s.decode("gb2312")
 
     return decoded_message
+
+
+def find_first_letter(s):
+    
+    for letter in s:
+        if letter.isalpha():
+            return letter
+    
+    return ""
+    
