@@ -1,0 +1,15 @@
+v1.0.1
+
+Feature
+=======
+* Ignore empty lines when deciding first letter cases.
+* Ignore non-English characters at the beginning of English lines.
+* Ignore empty English lines when checking for extra whitespaces.
+* Translate the entire UI to Chinese.
+* Add help notes for parse errors
+
+Bug Fixes
+=========
+* Completely eliminated garbage Chinese characters
+* Still show "Prevous" stub even when the previous line is empty
+* Only check ellipsis at the end of lines.
