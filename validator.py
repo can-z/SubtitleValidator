@@ -80,18 +80,21 @@ class Validator:
             
         index = 1
         for line in self.chinese_captions:
-            if line.lstrip() != line:
-                self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
-            if find_whitespace_right(line):
-                self.error(index, message_with_context("extra_whitespace_end", line.strip()))
+            
+            if len(line.strip()) > 0:
+                if line.lstrip() != line:
+                    self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
+                if find_whitespace_right(line):
+                    self.error(index, message_with_context("extra_whitespace_end", line.strip()))
             index += 1
         
         index = 1
         for line in self.english_captions:
-            if line.lstrip() != line:
-                self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
-            if find_whitespace_right(line):
-                self.error(index, message_with_context("extra_whitespace_end", line.strip()))
+            if len(line.strip()) > 0:
+                if line.lstrip() != line:
+                    self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
+                if find_whitespace_right(line):
+                    self.error(index, message_with_context("extra_whitespace_end", line.strip()))
             index += 1
 
     def upper_case_check(self):
