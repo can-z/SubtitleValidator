@@ -27,6 +27,7 @@ class Validator:
         line = parse_file.readline().decode("utf-8-sig")  # Remove BOM from first line
         cur_line = 1
         self.initial_upper_list.append(True)
+        is_current_upper = True
         
         while line != "":
             if not line.strip().isdigit():
@@ -54,12 +55,17 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             self.english_captions.append(line)
-            end_of_sentence_re = re.compile('.*[\\.\\?!\\*](\'|")*$')
-            end_of_sentence_result = end_of_sentence_re.match(line.replace("...", "").strip())
-            if end_of_sentence_result:
-                self.initial_upper_list.append(True)
+            if len(line.strip()) > 0: 
+                end_of_sentence_re = re.compile('.*[\\.\\?!\\*](\'|")*$')
+                end_of_sentence_result = end_of_sentence_re.match(line.replace("...", "").strip())
+                if end_of_sentence_result:
+                    self.initial_upper_list.append(True)
+                    is_current_upper = True
+                else:
+                    self.initial_upper_list.append(False)
+                    is_current_upper = False
             else:
-                self.initial_upper_list.append(False)
+                self.initial_upper_list.append(is_current_upper)
             
             line = parse_file.readline()
             cur_line += 1

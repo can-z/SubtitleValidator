@@ -14,6 +14,6 @@ TODO
 - [ ] No space before hyphens in Chinese captions
 - [x] Ignore hyphens at the beginning of English captions
 - [ ] Auto-fix errors
-- [ ] Keep previous capitalization mode if an English line is empty
+- [x] Keep previous capitalization mode if an English line is empty
 - [x] Ignore empty English lines
 - [ ] If a Chinese/English line has hyphens for different characters, the other line must have them too
