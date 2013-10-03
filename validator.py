@@ -272,9 +272,9 @@ def message_with_context(key, cur_line, prev_line=None, next_line=None):
 def smart_decode(s):
 
     try:
-        decoded_message = s.decode("utf-8")
-    except UnicodeDecodeError:
         decoded_message = s.decode("gb2312")
+    except UnicodeDecodeError:
+        decoded_message = s.decode("utf-8")
 
     return decoded_message
 
@@ -286,4 +286,32 @@ def find_first_letter(s):
             return letter
     
     return ""
-    
+
+
+"""
+Maybe we will need this crazy concoction later. Who knows.
+
+def really_smart_decode(s):
+
+    return really_smart_decode_recur(s, 0, 1, "", "gb2312")
+
+
+def really_smart_decode_recur(s, start, end, res, encoding):
+
+    try:
+        res += s[start:end].decode(encoding)
+        if end < len(s) - 1:
+            start = end
+            end += 1
+            return really_smart_decode_recur(s, start, end, res, "gb2312")
+        else:
+            return res
+    except UnicodeDecodeError:
+        if end - start == 3:
+            if encoding == "gb2312":
+                return really_smart_decode_recur(s, start, end - 2, res, "utf-8")
+            else:
+                raise UnicodeDecodeError("You are really fucked. Line: " + s)
+        else:
+            return really_smart_decode_recur(s, start, end + 1, res, encoding)
+"""

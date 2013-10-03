@@ -19,3 +19,6 @@ TODO
 - [ ] If a Chinese/English line has hyphens for different characters, the other line must have them too
 - [ ] Skip format error lines and process the rest
 - [ ] Ignore cases for words such as "I"
+- [ ] Fix English punctuation in Chinese lines
+- [ ] Show "No Error" message if no error
+- [ ] Show message for Exceptions
