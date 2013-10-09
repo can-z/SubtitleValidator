@@ -15,6 +15,7 @@ class Validator:
         self.parsed = False
         self.initial_upper_list = []
         self.error_list = []
+        self.system_error_list = []
 
         if write_to_file:
             self.result_file = file("local_results/" + os.path.basename(filename) + "result-" +
@@ -24,7 +25,13 @@ class Validator:
     def parse_file(self):
         parse_file = file(self.filename)
         
-        line = parse_file.readline().decode("utf-8-sig")  # Remove BOM from first line
+        line = parse_file.readline()
+        try:
+            line = line.decode("utf-8-sig")  # Remove BOM from first line
+        except UnicodeDecodeError:
+            self.system_error_list.append(
+                "Error decoding the following line while removing BOM from file.\n Line: " + line)
+
         cur_line = 1
         self.initial_upper_list.append(True)
         is_current_upper = True
@@ -50,7 +57,11 @@ class Validator:
             
             line = parse_file.readline()
             cur_line += 1
-            self.chinese_captions.append(smart_decode(line).encode("utf-8"))
+            try:
+                self.chinese_captions.append(smart_decode(line).encode("utf-8"))
+            except UnicodeDecodeError:
+                self.system_error_list.append("Error smart-decoding Line " + str(cur_line) + " while parsing.")
+                self.chinese_captions.append("")
             
             line = parse_file.readline()
             cur_line += 1
@@ -219,10 +230,16 @@ class Validator:
                 + get_text("format_error_message_6").decode("utf-8") + "\n\n"
 
         for e in self.error_list:
-
-                decoded_message = smart_decode(e[1])
+                try:
+                    decoded_message = smart_decode(e[1])
+                except UnicodeDecodeError:
+                    self.system_error_list.append("Error smart-decoding Subtitle Line " + str(e[0]))
+                    decoded_message = ""
 
                 result_string += str(e[0]) + ": " + decoded_message + "\n\n"
+
+        for e in self.system_error_list:
+            result_string += e + "\n\n"
 
         if self.write_to_file:
             self.result_file.write(result_string.encode("utf-8"))

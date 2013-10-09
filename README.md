@@ -22,3 +22,6 @@ TODO
 - [ ] Fix English punctuation in Chinese lines
 - [ ] Show "No Error" message if no error
 - [ ] Show message for Exceptions
+- [ ] Complete really_smart_decode()
+- [ ] Better and Chinese system error messages
+
