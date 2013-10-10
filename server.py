@@ -1,7 +1,10 @@
-from flask import Flask, request, render_template, redirect, url_for, send_from_directory
-from werkzeug import utils
 import os
-import validator
+
+from flask import Flask, request, render_template, redirect, url_for
+from werkzeug import utils
+
+from src import validator
+
 
 UPLOAD_FOLDER = './uploads/'
 app = Flask(__name__)

@@ -1,7 +1,7 @@
 import Tkinter
 import tkFileDialog
-import validator
 import sys
+from src import validator
 
 if __name__ == "__main__":
 

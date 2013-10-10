@@ -2,6 +2,7 @@ import re
 import datetime
 import os
 import unicodedata
+import subtitle
 
 
 class Validator:
@@ -9,12 +10,8 @@ class Validator:
 
         self.write_to_file = write_to_file
         self.filename = filename
-        self.line_numbers = []
-        self.timestamps = []
-        self.chinese_captions = []
-        self.english_captions = []
         self.parsed = False
-        self.initial_upper_list = []
+        self.subtitle_list = []
         self.error_list = []
         self.system_error_list = []
 
@@ -25,7 +22,8 @@ class Validator:
 
     def parse_file(self):
         parse_file = file(self.filename)
-        
+
+        cur_subtitle = subtitle.Subtitle()
         line = parse_file.readline()
         try:
             line = line.decode("utf-8-sig")  # Remove BOM from first line
@@ -34,15 +32,15 @@ class Validator:
                 "Error decoding the following line while removing BOM from file.\n Line: " + line)
 
         cur_line = 1
-        self.initial_upper_list.append(True)
-        is_current_upper = True
+        is_next_upper = True
         
         while line != "":
+            cur_subtitle.is_init_upper = is_next_upper
             if not line.strip().isdigit():
                 self.error(cur_line, message_with_context("invalid_line_number", line.strip()))
                 return False
             else:
-                self.line_numbers.append(line)
+                cur_subtitle.index = int(line.strip())
 
             line = parse_file.readline()
             cur_line += 1
@@ -54,32 +52,35 @@ class Validator:
                 self.error(cur_line, message_with_context("invalid_time_stamp", line.strip()))
                 return False
             else:
-                self.timestamps.append(line)
+                cur_subtitle.timestamp = line
             
             line = parse_file.readline()
             cur_line += 1
             try:
-                self.chinese_captions.append(really_smart_decode(line).encode("utf-8"))
+                cur_subtitle.chinese_line = really_smart_decode(line).encode("utf-8")
             except UnicodeDecodeError:
                 self.system_error_list.append("Error smart-decoding Line " + str(cur_line) + " while parsing.")
-                self.chinese_captions.append("")
+                cur_subtitle.chinese_line = ""
             
             line = parse_file.readline()
             cur_line += 1
-            self.english_captions.append(line)
+            cur_subtitle.english_line = line
             has_english_line = True
-            if len(line.strip()) > 0: 
+            if len(line.strip()) > 0:
+
+                if line.endswith("..."):
+                    cur_subtitle.ends_with_ellipsis = True
+                    line = line.replace("...", "")
+
                 end_of_sentence_re = re.compile('.*[\\.\\?!\\*](\'|")*$')
-                end_of_sentence_result = end_of_sentence_re.match(line.replace("...", "").strip())
+                end_of_sentence_result = end_of_sentence_re.match(line.strip())
                 if end_of_sentence_result:
-                    self.initial_upper_list.append(True)
-                    is_current_upper = True
+                    is_next_upper = True
                 else:
-                    self.initial_upper_list.append(False)
-                    is_current_upper = False
+                    is_next_upper = False
             else:
                 has_english_line = False
-                self.initial_upper_list.append(is_current_upper)
+                is_next_upper = cur_subtitle.is_init_upper
 
             if has_english_line:
                 line = parse_file.readline()
@@ -92,6 +93,9 @@ class Validator:
                 line = parse_file.readline()
                 cur_line += 1
 
+            self.subtitle_list.append(cur_subtitle)
+            cur_subtitle = subtitle.Subtitle()
+
         parse_file.close()
 
         self.parsed = True    
@@ -101,59 +105,52 @@ class Validator:
 
         if not self.parsed:
             print "File not parsed. Exiting."
-            
-        index = 1
-        for line in self.chinese_captions:
-            
-            if len(line.strip()) > 0:
-                if line.lstrip() != line:
-                    self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
-                if find_whitespace_right(line):
-                    self.error(index, message_with_context("extra_whitespace_end", line.strip()))
-            index += 1
-        
-        index = 1
-        for line in self.english_captions:
-            if len(line.strip()) > 0:
-                if line.lstrip() != line:
-                    self.error(index, message_with_context("extra_whitespace_begin", line.strip()))
-                if find_whitespace_right(line):
-                    self.error(index, message_with_context("extra_whitespace_end", line.strip()))
-            index += 1
+
+        for s in self.subtitle_list:
+            for line in (s.chinese_line, s.english_line):
+                if len(line.strip()) > 0:
+                    if line.lstrip() != line:
+                        self.error(s.index, message_with_context("extra_whitespace_begin", line.strip()))
+                    if find_whitespace_right(line):
+                        self.error(s.index, message_with_context("extra_whitespace_end", line.strip()))
 
     def upper_case_check(self):
         
         index = 1
-        for line in self.english_captions:
-
+        for s in self.subtitle_list:
+            line = s.english_line
             first_letter = find_first_letter(line)
 
-            if self.initial_upper_list[index - 1]:
+            if self.subtitle_list[index - 1].is_init_upper:
                 if first_letter.islower():
                     if index == 1:
-                        self.error(index, message_with_context("require_upper_case", line.strip(),
+                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line="**This is the first line of the text**"))
                     else:
-                        self.error(index, message_with_context("require_upper_case", line.strip(),
-                                                               prev_line=self.english_captions[index - 2].strip()))
+                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
+                                                               prev_line=self.subtitle_list[index - 2].english_line
+                                                               .strip()))
             
             index += 1
     
     def lower_case_check(self):
         index = 1
 
-        for line in self.english_captions:
-            
+        for s in self.subtitle_list:
+            line = s.english_line
             first_letter = find_first_letter(line)
             
-            if not self.initial_upper_list[index - 1]:
+            if not self.subtitle_list[index - 1].is_init_upper:
                 if first_letter.isupper():
                     if index == 1:
-                        self.warning(index, message_with_context("require_lower_case", line.strip(),
+                        self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
                                                                  prev_line="**This is the first line of the text**"))
                     else:
-                        self.warning(index, message_with_context("require_lower_case", line.strip(),
-                                                                 prev_line=self.english_captions[index - 2].strip()))
+                        # Don't warn if the last line ends with "..." (to avoid double warning)
+                        if not self.subtitle_list[index - 2].ends_with_ellipsis:
+                            self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
+                                                                     prev_line=self.subtitle_list[index - 2].english_line
+                                                                     .strip()))
             
             index += 1
 
@@ -164,13 +161,12 @@ class Validator:
 
         index = 1
 
-        for line in self.chinese_captions:
-
-            line = line.replace("-", "")
+        for s in self.subtitle_list:
+            line = s.chinese_line.replace("-", "")
             double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
-                self.error(index, message_with_context("two_space_chinese", line.strip()))
+                self.error(index, message_with_context("two_space_chinese", s.chinese_line.strip()))
 
             index += 1
 
@@ -178,9 +174,8 @@ class Validator:
         """English captions only. Assume hyphenation is correct (one space before and after the hyphen)."""
 
         index = 1
-        for line in self.english_captions:
-
-            line = line.replace("- ", "")
+        for s in self.subtitle_list:
+            line = s.english_line.replace("- ", "")
 
             # For some reason, re does not work on this one (Python 2.7). Try the re: [^ ]+((\s)\s+)[^ ]+
             # or [^ ]+(( ) +)[^ ]+
@@ -189,7 +184,7 @@ class Validator:
             for w in line:
                 if w == " ":
                     if prev:
-                        self.error(index, message_with_context("one_space_english", line.strip()))
+                        self.error(index, message_with_context("one_space_english", s.english_line.strip()))
                         break
                     else:
                         prev = True
@@ -201,11 +196,12 @@ class Validator:
     def ellipsis_check(self):
 
         index = 1
-        for line in self.english_captions:
+        for s in self.subtitle_list:
+            line = s.english_line
             if line.strip().endswith("..."):
-                if index < len(self.english_captions):
+                if index < len(self.subtitle_list):
                     self.warning(index, message_with_context("ellipsis", line.strip(),
-                                                             next_line=self.english_captions[index].strip()))
+                                                             next_line=self.subtitle_list[index].english_line.strip()))
                 else:
                     self.warning(index, message_with_context("ellipsis", line.strip(),
                                                              next_line="**This is the last line of the text**"))
