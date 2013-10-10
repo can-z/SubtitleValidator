@@ -1,6 +1,8 @@
 import re
 import datetime
 import os
+import unicodedata
+
 
 
 class Validator:
@@ -58,7 +60,7 @@ class Validator:
             line = parse_file.readline()
             cur_line += 1
             try:
-                self.chinese_captions.append(smart_decode(line).encode("utf-8"))
+                self.chinese_captions.append(really_smart_decode(line).encode("utf-8"))
             except UnicodeDecodeError:
                 self.system_error_list.append("Error smart-decoding Line " + str(cur_line) + " while parsing.")
                 self.chinese_captions.append("")
@@ -231,7 +233,7 @@ class Validator:
 
         for e in self.error_list:
                 try:
-                    decoded_message = smart_decode(e[1])
+                    decoded_message = really_smart_decode(e[1])
                 except UnicodeDecodeError:
                     self.system_error_list.append("Error smart-decoding Subtitle Line " + str(e[0]))
                     decoded_message = ""
@@ -239,7 +241,7 @@ class Validator:
                 result_string += str(e[0]) + ": " + decoded_message + "\n\n"
 
         for e in self.system_error_list:
-            result_string += e + "\n\n"
+            result_string += really_smart_decode(e) + "\n\n"
 
         if self.write_to_file:
             self.result_file.write(result_string.encode("utf-8"))
@@ -305,30 +307,54 @@ def find_first_letter(s):
     return ""
 
 
-"""
-Maybe we will need this crazy concoction later. Who knows.
-
 def really_smart_decode(s):
 
-    return really_smart_decode_recur(s, 0, 1, "", "gb2312")
+    return really_smart_decode_recur(s, 0, 1, "", "ascii")
 
 
 def really_smart_decode_recur(s, start, end, res, encoding):
 
     try:
-        res += s[start:end].decode(encoding)
-        if end < len(s) - 1:
+        cur_code = s[start:end].decode(encoding)
+        if encoding != "ascii" and not is_valid_character(cur_code):
+            raise UnicodeDecodeError(encoding, '', start, end, 'Not chinese.')
+
+        res += cur_code
+
+        if end < len(s):
             start = end
             end += 1
-            return really_smart_decode_recur(s, start, end, res, "gb2312")
+            return really_smart_decode_recur(s, start, end, res, "ascii")
         else:
             return res
     except UnicodeDecodeError:
-        if end - start == 3:
+
+        if encoding == "ascii":
+            return really_smart_decode_recur(s, start, end, res, "utf-8")
+
+        if end - start == 2:
+            if encoding == "utf-8":
+                end += 1
+                return really_smart_decode_recur(s, start, end, res, "utf-8")
             if encoding == "gb2312":
-                return really_smart_decode_recur(s, start, end - 2, res, "utf-8")
-            else:
-                raise UnicodeDecodeError("You are really fucked. Line: " + s)
+                res += "**"  # Skip two bytes when a character is replaced with "**".
+                if end < len(s):
+                    start = end
+                    end += 1
+                    return really_smart_decode_recur(s, start, end, res, "ascii")
+                else:
+                    return res
+        elif end - start == 3:
+            if encoding == "utf-8":
+                return really_smart_decode_recur(s, start, end - 2, res, "gb2312")
         else:
             return really_smart_decode_recur(s, start, end + 1, res, encoding)
-"""
+
+
+def is_valid_character(code):
+
+    if len(code) > 1:
+        return False
+
+    return u"\u4e00" <= code <= u"\u62ff" or u"\u6300" <= code <= u"\u77ff" or u"\u7800" <= code <= u"\u8cff" or\
+        u"\u8d00" <= code <= u"\u9fcc" or unicodedata.category(code) == "Po"
