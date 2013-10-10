@@ -4,7 +4,6 @@ import os
 import unicodedata
 
 
-
 class Validator:
     def __init__(self, filename, write_to_file):
 
@@ -92,7 +91,9 @@ class Validator:
             while line != "" and line.strip() == "":
                 line = parse_file.readline()
                 cur_line += 1
-        
+
+        parse_file.close()
+
         self.parsed = True    
         return True    
 

@@ -28,13 +28,15 @@ def upload_file():
 
 @app.route("/result/<filename>")
 def result(filename):
-    v = validator.Validator(os.path.join(app.config['UPLOAD_FOLDER'], filename), False)
+    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    v = validator.Validator(full_filename, False)
     if not v.parse_file():
         res = v.produce_result_file(True)
         return render_template("result.html", res=res)
     v.perform_all_checks()
 
     res = v.produce_result_file(False)
+    os.remove(full_filename)
     return render_template("result.html", res=res)
 
 if __name__ == "__main__":
