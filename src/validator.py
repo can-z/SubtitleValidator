@@ -226,7 +226,10 @@ class Validator:
                 + get_text("format_error_message_3").decode("utf-8") + "\n"\
                 + get_text("format_error_message_4").decode("utf-8") + "\n"\
                 + get_text("format_error_message_5").decode("utf-8") + "\n"\
-                + get_text("format_error_message_6").decode("utf-8") + "\n\n"
+                + get_text("format_error_message_6").decode("utf-8") + "\n\n"\
+                + get_text("format_error_notice").decode("utf-8") + "\n\n"
+        else:
+            result_string += get_text("subtitle_error_notice").decode("utf-8") + "\n\n"
 
         for e in self.error_list:
                 try:
