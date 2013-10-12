@@ -68,7 +68,7 @@ class Validator:
             has_english_line = True
             if len(line.strip()) > 0:
 
-                if line.endswith("..."):
+                if line.strip().endswith("..."):
                     cur_subtitle.ends_with_ellipsis = True
                     line = line.replace("...", "")
 
