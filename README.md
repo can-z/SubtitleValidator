@@ -24,6 +24,5 @@ TODO
 - [x] Show message for Exceptions
 - [x] Complete really_smart_decode()
 - [ ] Better and Chinese system error messages
-- [ ] Check if the line number is digit
 - [ ] Fix right_white_space_check
 - [ ] Ignore {\an8} lines

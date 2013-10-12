@@ -264,7 +264,7 @@ class Validator:
 
 def find_whitespace_right(line):
         
-    right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
+    right_whitespace_re = re.compile('^.*[ \t]+[\r\n|\n]$')
     right_whitespace_result = right_whitespace_re.match(line)
     return right_whitespace_result
 
