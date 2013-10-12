@@ -124,10 +124,10 @@ class Validator:
             if self.subtitle_list[index - 1].is_init_upper:
                 if line[first_letter_index].islower():
                     if index == 1:
-                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
+                        self.error(s.index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line="**This is the first line of the text**"))
                     else:
-                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
+                        self.error(s.index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line=self.subtitle_list[index - 2].english_line
                                                                .strip()))
             
@@ -146,14 +146,14 @@ class Validator:
             if not self.subtitle_list[index - 1].is_init_upper:
                 if line[first_letter_index].isupper():
                     if index == 1:
-                        self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
-                                                                 prev_line="**This is the first line of the text**"))
+                        self.warning(s.index, message_with_context("require_lower_case", s.english_line.strip(),
+                                                                   prev_line="**This is the first line of the text**"))
                     else:
                         # Don't warn if the last line ends with "..." (to avoid double warning)
                         if not self.subtitle_list[index - 2].ends_with_ellipsis:
-                            self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
-                                                                     prev_line=self.subtitle_list[index - 2].english_line
-                                                                     .strip()))
+                            self.warning(s.index, message_with_context("require_lower_case", s.english_line.strip(),
+                                                                       prev_line=self.subtitle_list[index - 2].english_line
+                                                                       .strip()))
             
             index += 1
 
@@ -169,7 +169,7 @@ class Validator:
             double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
-                self.error(index, message_with_context("two_space_chinese", s.chinese_line.strip()))
+                self.error(s.index, message_with_context("two_space_chinese", s.chinese_line.strip()))
 
             index += 1
 
@@ -187,7 +187,7 @@ class Validator:
             for w in line:
                 if w == " ":
                     if prev:
-                        self.error(index, message_with_context("one_space_english", s.english_line.strip()))
+                        self.error(s.index, message_with_context("one_space_english", s.english_line.strip()))
                         break
                     else:
                         prev = True
@@ -203,11 +203,11 @@ class Validator:
             line = s.english_line
             if line.strip().endswith("..."):
                 if index < len(self.subtitle_list):
-                    self.warning(index, message_with_context("ellipsis", line.strip(),
-                                                             next_line=self.subtitle_list[index].english_line.strip()))
+                    self.warning(s.index, message_with_context("ellipsis", line.strip(),
+                                                               next_line=self.subtitle_list[index].english_line.strip()))
                 else:
-                    self.warning(index, message_with_context("ellipsis", line.strip(),
-                                                             next_line="**This is the last line of the text**"))
+                    self.warning(s.index, message_with_context("ellipsis", line.strip(),
+                                                               next_line="**This is the last line of the text**"))
 
             index += 1
 
