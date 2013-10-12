@@ -119,10 +119,10 @@ class Validator:
         index = 1
         for s in self.subtitle_list:
             line = s.english_line
-            first_letter = find_first_letter(line)
+            first_letter_index = find_first_letter_index(line)
 
             if self.subtitle_list[index - 1].is_init_upper:
-                if first_letter.islower():
+                if line[first_letter_index].islower():
                     if index == 1:
                         self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line="**This is the first line of the text**"))
@@ -138,10 +138,13 @@ class Validator:
 
         for s in self.subtitle_list:
             line = s.english_line
-            first_letter = find_first_letter(line)
-            
+            first_letter_index = find_first_letter_index(line)
+            if line[first_letter_index:].startswith("I ") or line[first_letter_index:].startswith("I'"):
+                index += 1
+                continue
+
             if not self.subtitle_list[index - 1].is_init_upper:
-                if first_letter.isupper():
+                if line[first_letter_index].isupper():
                     if index == 1:
                         self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
                                                                  prev_line="**This is the first line of the text**"))
@@ -298,13 +301,15 @@ def smart_decode(s):
     return decoded_message
 
 
-def find_first_letter(s):
-    
+def find_first_letter_index(s):
+
+    index = 0
     for letter in s:
         if letter.isalpha():
-            return letter
+            return index
+        index += 1
     
-    return ""
+    return -1
 
 
 def really_smart_decode(s):
