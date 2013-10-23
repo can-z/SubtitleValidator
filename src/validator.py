@@ -27,20 +27,27 @@ class Validator:
         bom = parse_file.read(2)
 
         if bom == codecs.BOM_UTF16_LE:
+            parse_file.close()
             parse_file = codecs.open(self.filename, encoding="utf-16-le")
             parse_file.read(1)
+            line = parse_file.readline()
         elif bom == codecs.BOM_UTF16_BE:
+            parse_file.close()
             parse_file = codecs.open(self.filename, encoding="utf-16-be")
             parse_file.read(1)
-
+            line = parse_file.readline()
+        else:
+            parse_file.close()
+            parse_file = file(self.filename)
+            line = parse_file.readline()
+            try:
+                line = line.decode("utf-8-sig")  # Remove BOM from first line
+            except UnicodeDecodeError:
+                self.system_error_list.append(
+                    "Error decoding the following line while removing BOM from file.\n Line: " + line)
         cur_subtitle = subtitle.Subtitle()
-        line = parse_file.readline()
-        try:
-            line = line.decode("utf-8-sig")  # Remove BOM from first line
-        except UnicodeDecodeError:
-            self.system_error_list.append(
-                "Error decoding the following line while removing BOM from file.\n Line: " + line)
 
+        line = really_smart_decode(line)
         cur_line = 1
         is_next_upper = True
         
@@ -52,7 +59,7 @@ class Validator:
             else:
                 cur_subtitle.index = int(line.strip())
 
-            line = parse_file.readline()
+            line = really_smart_decode(parse_file.readline())
             cur_line += 1
             
             timestamp_regex = re.compile('(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)')
@@ -64,15 +71,15 @@ class Validator:
             else:
                 cur_subtitle.timestamp = line
             
-            line = parse_file.readline()
+            line = really_smart_decode(parse_file.readline())
             cur_line += 1
             try:
-                cur_subtitle.chinese_line = really_smart_decode(line).encode("utf-8")
+                cur_subtitle.chinese_line = line
             except UnicodeDecodeError:
                 self.system_error_list.append("Error smart-decoding Line " + str(cur_line) + " while parsing.")
                 cur_subtitle.chinese_line = ""
             
-            line = parse_file.readline()
+            line = really_smart_decode(parse_file.readline())
             cur_line += 1
             cur_subtitle.english_line = line
             has_english_line = True
@@ -93,14 +100,14 @@ class Validator:
                 is_next_upper = cur_subtitle.is_init_upper
 
             if has_english_line:
-                line = parse_file.readline()
+                line = really_smart_decode(parse_file.readline())
                 cur_line += 1
             if line.strip() != "":
                 self.error(cur_line, message_with_context("empty_line_required", line.strip()))
                 return False
 
             while line != "" and line.strip() == "":
-                line = parse_file.readline()
+                line = really_smart_decode(parse_file.readline())
                 cur_line += 1
 
             self.subtitle_list.append(cur_subtitle)
@@ -292,11 +299,11 @@ def get_text(key):
 
 def message_with_context(key, cur_line, prev_line=None, next_line=None):
 
-    res = get_text(key) + "\n\t" + get_text("actual") + ": " + cur_line
+    res = get_text(key) + "\n\t" + get_text("actual") + ": " + cur_line.encode(encoding="utf8")
     if prev_line is not None:
-        res += "\n\t" + get_text("previous") + ": " + prev_line
+        res += "\n\t" + get_text("previous") + ": " + prev_line.encode(encoding="utf8")
     if next_line is not None:
-        res += "\n\t" + get_text("next") + ": " + next_line
+        res += "\n\t" + get_text("next") + ": " + next_line.encode(encoding="utf8")
 
     return res
 
@@ -324,6 +331,8 @@ def find_first_letter_index(s):
 
 def really_smart_decode(s):
 
+    if isinstance(s, unicode):
+        return s
     return really_smart_decode_recur(s, 0, 1, "", "ascii")
 
 
