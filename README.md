@@ -19,10 +19,9 @@ TODO
 - [ ] If a Chinese/English line has hyphens for different characters, the other line must have them too
 - [ ] Skip format error lines and process the rest
 - [x] Ignore cases for words such as "I"
-- [ ] Fix English punctuation in Chinese lines
 - [ ] Show "No Error" message if no error
 - [x] Show message for Exceptions
 - [x] Complete really_smart_decode()
 - [ ] Better and Chinese system error messages
-- [ ] Fix right_white_space_check
-- [ ] Ignore {\an8} lines
+- [x] Fix right_white_space_check
+- [x] Ignore {\an8} lines
