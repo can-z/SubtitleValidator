@@ -73,6 +73,17 @@ class Validator:
             
             line = really_smart_decode(parse_file.readline())
             cur_line += 1
+
+            # Skip the entire block if the line starts with {\an (topped line). This line is not in the subtitle file
+            # and hence is excluded from ALL format checks.
+            if "{\\" in line:
+                while line.strip() != "":
+                    line = really_smart_decode(parse_file.readline())
+                    cur_line += 1
+                line = really_smart_decode(parse_file.readline())
+                cur_line += 1
+                continue
+
             try:
                 cur_subtitle.chinese_line = line
             except UnicodeDecodeError:
