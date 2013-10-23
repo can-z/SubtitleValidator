@@ -3,6 +3,7 @@ import datetime
 import os
 import unicodedata
 import subtitle
+import codecs
 
 
 class Validator:
@@ -22,6 +23,15 @@ class Validator:
 
     def parse_file(self):
         parse_file = file(self.filename)
+
+        bom = parse_file.read(2)
+
+        if bom == codecs.BOM_UTF16_LE:
+            parse_file = codecs.open(self.filename, encoding="utf-16-le")
+            parse_file.read(1)
+        elif bom == codecs.BOM_UTF16_BE:
+            parse_file = codecs.open(self.filename, encoding="utf-16-be")
+            parse_file.read(1)
 
         cur_subtitle = subtitle.Subtitle()
         line = parse_file.readline()
