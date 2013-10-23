@@ -78,7 +78,7 @@ class Validator:
             has_english_line = True
             if len(line.strip()) > 0:
 
-                if line.endswith("..."):
+                if line.strip().endswith("..."):
                     cur_subtitle.ends_with_ellipsis = True
                     line = line.replace("...", "")
 
@@ -129,15 +129,15 @@ class Validator:
         index = 1
         for s in self.subtitle_list:
             line = s.english_line
-            first_letter = find_first_letter(line)
+            first_letter_index = find_first_letter_index(line)
 
             if self.subtitle_list[index - 1].is_init_upper:
-                if first_letter.islower():
+                if line[first_letter_index].islower():
                     if index == 1:
-                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
+                        self.error(s.index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line="**This is the first line of the text**"))
                     else:
-                        self.error(index, message_with_context("require_upper_case", s.english_line.strip(),
+                        self.error(s.index, message_with_context("require_upper_case", s.english_line.strip(),
                                                                prev_line=self.subtitle_list[index - 2].english_line
                                                                .strip()))
             
@@ -148,19 +148,22 @@ class Validator:
 
         for s in self.subtitle_list:
             line = s.english_line
-            first_letter = find_first_letter(line)
-            
+            first_letter_index = find_first_letter_index(line)
+            if line[first_letter_index:].startswith("I ") or line[first_letter_index:].startswith("I'"):
+                index += 1
+                continue
+
             if not self.subtitle_list[index - 1].is_init_upper:
-                if first_letter.isupper():
+                if line[first_letter_index].isupper():
                     if index == 1:
-                        self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
-                                                                 prev_line="**This is the first line of the text**"))
+                        self.warning(s.index, message_with_context("require_lower_case", s.english_line.strip(),
+                                                                   prev_line="**This is the first line of the text**"))
                     else:
                         # Don't warn if the last line ends with "..." (to avoid double warning)
                         if not self.subtitle_list[index - 2].ends_with_ellipsis:
-                            self.warning(index, message_with_context("require_lower_case", s.english_line.strip(),
-                                                                     prev_line=self.subtitle_list[index - 2].english_line
-                                                                     .strip()))
+                            self.warning(s.index, message_with_context("require_lower_case", s.english_line.strip(),
+                                                                       prev_line=self.subtitle_list[index - 2].english_line
+                                                                       .strip()))
             
             index += 1
 
@@ -176,7 +179,7 @@ class Validator:
             double_whitespace_regex = re.compile('[^ ]+(( )|( {3,}))[^ ]+')
 
             if double_whitespace_regex.match(line):
-                self.error(index, message_with_context("two_space_chinese", s.chinese_line.strip()))
+                self.error(s.index, message_with_context("two_space_chinese", s.chinese_line.strip()))
 
             index += 1
 
@@ -194,7 +197,7 @@ class Validator:
             for w in line:
                 if w == " ":
                     if prev:
-                        self.error(index, message_with_context("one_space_english", s.english_line.strip()))
+                        self.error(s.index, message_with_context("one_space_english", s.english_line.strip()))
                         break
                     else:
                         prev = True
@@ -210,11 +213,11 @@ class Validator:
             line = s.english_line
             if line.strip().endswith("..."):
                 if index < len(self.subtitle_list):
-                    self.warning(index, message_with_context("ellipsis", line.strip(),
-                                                             next_line=self.subtitle_list[index].english_line.strip()))
+                    self.warning(s.index, message_with_context("ellipsis", line.strip(),
+                                                               next_line=self.subtitle_list[index].english_line.strip()))
                 else:
-                    self.warning(index, message_with_context("ellipsis", line.strip(),
-                                                             next_line="**This is the last line of the text**"))
+                    self.warning(s.index, message_with_context("ellipsis", line.strip(),
+                                                               next_line="**This is the last line of the text**"))
 
             index += 1
 
@@ -271,7 +274,7 @@ class Validator:
 
 def find_whitespace_right(line):
         
-    right_whitespace_re = re.compile('^.*[ \t\f\v]+$')
+    right_whitespace_re = re.compile('^.*[ \t]+[\r\n|\n]$')
     right_whitespace_result = right_whitespace_re.match(line)
     return right_whitespace_result
 
@@ -308,13 +311,15 @@ def smart_decode(s):
     return decoded_message
 
 
-def find_first_letter(s):
-    
+def find_first_letter_index(s):
+
+    index = 0
     for letter in s:
         if letter.isalpha():
-            return letter
+            return index
+        index += 1
     
-    return ""
+    return -1
 
 
 def really_smart_decode(s):
