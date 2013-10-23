@@ -1,3 +1,17 @@
+v1.0.2
+
+Feature
+=======
+* Ignore case-checks for "I" and "I've".
+* Ignore lines with special formatting (e.g. {\an8}, {\pos}
+
+Bug Fixes
+=========
+* Support UTF-16 files.
+* Support mixed encodings of UTF-8, ANSI and ASCII.
+* Mark non-Chinese characters with **.
+* Decode everything into Unicode before reading and encode everything before writing.
+
 v1.0.1
 
 Feature
