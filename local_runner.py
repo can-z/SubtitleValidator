@@ -11,7 +11,7 @@ LOG = False
 
 
 def error_logger(type, value, tb):
-    shutil.copy(trouble_maker, "troublemaker/" + os.path.basename(trouble_maker))
+    shutil.copy(trouble_maker, "trouble_maker/" + os.path.basename(trouble_maker))
     for line in traceback.format_exception(type, value, tb):
         print line
 
