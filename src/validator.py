@@ -49,15 +49,17 @@ class Validator:
 
         line = really_smart_decode(line)
         cur_line = 1
+        last_legit_line_number = -1
         is_next_upper = True
         
         while line != "":
             cur_subtitle.is_init_upper = is_next_upper
             if not line.strip().isdigit():
-                self.error(cur_line, message_with_context("invalid_line_number", line.strip()))
+                self.error(last_legit_line_number, message_with_context("invalid_line_number", line.strip()))
                 return False
             else:
                 cur_subtitle.index = int(line.strip())
+                last_legit_line_number = int(line.strip())
 
             line = really_smart_decode(parse_file.readline())
             cur_line += 1
@@ -66,7 +68,7 @@ class Validator:
             
             timestamp_result = timestamp_regex.match(line)
             if not timestamp_result:
-                self.error(cur_line, message_with_context("invalid_time_stamp", line.strip()))
+                self.error(last_legit_line_number, message_with_context("invalid_time_stamp", line.strip()))
                 return False
             else:
                 cur_subtitle.timestamp = line
@@ -114,7 +116,7 @@ class Validator:
                 line = really_smart_decode(parse_file.readline())
                 cur_line += 1
             if line.strip() != "":
-                self.error(cur_line, message_with_context("empty_line_required", line.strip()))
+                self.error(last_legit_line_number, message_with_context("empty_line_required", line.strip()))
                 return False
 
             while line != "" and line.strip() == "":
@@ -258,9 +260,8 @@ class Validator:
                 + get_text("format_error_message_4").decode("utf-8") + "\n"\
                 + get_text("format_error_message_5").decode("utf-8") + "\n"\
                 + get_text("format_error_message_6").decode("utf-8") + "\n\n"\
-                + get_text("format_error_notice").decode("utf-8") + "\n\n"
-        else:
-            result_string += get_text("subtitle_error_notice").decode("utf-8") + "\n\n"
+
+        result_string += get_text("subtitle_error_notice").decode("utf-8") + "\n\n"
 
         for e in self.error_list:
                 try:
@@ -269,7 +270,10 @@ class Validator:
                     self.system_error_list.append("Error smart-decoding Subtitle Line " + str(e[0]))
                     decoded_message = ""
 
-                result_string += str(e[0]) + ": " + decoded_message + "\n\n"
+                if e[0] < 0:
+                    result_string += get_text("beginning_of_file").decode("utf-8") + ": " + decoded_message + "\n\n"
+                else:
+                    result_string += str(e[0]) + ": " + decoded_message + "\n\n"
 
         for e in self.system_error_list:
             result_string += really_smart_decode(e) + "\n\n"
